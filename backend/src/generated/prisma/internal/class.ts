@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.8.0",
   "engineVersion": "3c6e192761c0362d496ed980de936e2f3cebcd3a",
   "activeProvider": "sqlite",
-  "inlineSchema": "datasource db {\n  provider = \"sqlite\"\n}\n\ngenerator client {\n  provider = \"prisma-client\"\n  output   = \"../src/generated/prisma\"\n}\n\nmodel Category {\n  id   Int    @id @default(autoincrement())\n  name String @unique\n\n  todos Todo[]\n}\n\nmodel Todo {\n  id        Int      @id @default(autoincrement())\n  text      String\n  completed Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  categoryId Int\n  category   Category @relation(fields: [categoryId], references: [id])\n}\n",
+  "inlineSchema": "datasource db {\n  provider = \"sqlite\"\n}\n\ngenerator client {\n  provider     = \"prisma-client\"\n  output       = \"../src/generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\nmodel Category {\n  id   Int    @id @default(autoincrement())\n  name String @unique\n\n  todos Todo[]\n}\n\nmodel Todo {\n  id        Int      @id @default(autoincrement())\n  text      String\n  completed Boolean  @default(false)\n  createdAt DateTime @default(now())\n\n  categoryId Int\n  category   Category @relation(fields: [categoryId], references: [id])\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -45,10 +45,10 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.js"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.sqlite.wasm-base64.js")
     return await decodeBase64AsWasm(wasm)
   },
 
