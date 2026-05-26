@@ -19,3 +19,7 @@ export interface Todo {
   createdAt: string;
   category?: Category;
 }
+
+export type CreateTodoInput = Omit<Todo, "id" | "createdAt" | "category">;
+
+export type UpdateTodoInput = Partial<CreateTodoInput>;
