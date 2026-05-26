@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateTodoDto } from './dto/create-todo.dto';
-import { UpdateTodoDto } from './dto/update-todo.dto';
+import { PrismaService } from '../prisma/prisma.service.js';
+import { CreateTodoDto } from './dto/create-todo.dto.js';
+import { UpdateTodoDto } from './dto/update-todo.dto.js';
 
 @Injectable()
 export class TodosRepository {
@@ -52,6 +52,17 @@ export class TodosRepository {
   remove(id: number) {
     return this.prisma.todo.delete({
       where: { id },
+      include: {
+        category: true,
+      },
+    });
+  }
+
+  async countByCategoryId(categoryId: number): Promise<number> {
+    return this.prisma.todo.count({
+      where: {
+        categoryId,
+      },
     });
   }
 }

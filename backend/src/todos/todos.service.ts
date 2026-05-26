@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { TodosRepository } from './todos.repository';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { CategoriesService } from 'src/categories/categories.service';
 
+const MAX_TASKS_PER_CATEGORY = 5;
 @Injectable()
 export class TodosService {
   constructor(
@@ -13,6 +18,17 @@ export class TodosService {
 
   async create(createTodoDto: CreateTodoDto) {
     await this.categoriesService.findOne(createTodoDto.categoryId);
+
+    const tasksCount = await this.todosRepository.countByCategoryId(
+      createTodoDto.categoryId,
+    );
+
+    if (tasksCount >= MAX_TASKS_PER_CATEGORY) {
+      throw new BadRequestException(
+        `Category with id ${createTodoDto.categoryId} already has the maximum limit of 5 tasks`,
+      );
+    }
+
     return this.todosRepository.create(createTodoDto);
   }
 
