@@ -1,13 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { TodosRepository } from './todos.repository.js';
-import { CreateTodoDto } from './dto/create-todo.dto.js';
-import { UpdateTodoDto } from './dto/update-todo.dto.js';
+import { TodosRepository } from './todos.repository';
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
+import { CategoriesService } from 'src/categories/categories.service';
 
 @Injectable()
 export class TodosService {
-  constructor(private readonly todosRepository: TodosRepository) {}
+  constructor(
+    private readonly todosRepository: TodosRepository,
+    private readonly categoriesService: CategoriesService,
+  ) {}
 
-  create(createTodoDto: CreateTodoDto) {
+  async create(createTodoDto: CreateTodoDto) {
+    await this.categoriesService.findOne(createTodoDto.categoryId);
     return this.todosRepository.create(createTodoDto);
   }
 
@@ -27,6 +32,11 @@ export class TodosService {
 
   async update(id: number, updateTodoDto: UpdateTodoDto) {
     await this.findOne(id);
+
+    if (updateTodoDto.categoryId) {
+      await this.categoriesService.findOne(updateTodoDto.categoryId);
+    }
+
     return this.todosRepository.update(id, updateTodoDto);
   }
 

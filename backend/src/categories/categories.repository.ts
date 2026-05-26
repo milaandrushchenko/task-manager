@@ -12,4 +12,8 @@ export class CategoriesRepository {
       },
     });
   }
+
+  findOne(id: number) {
+    return this.prisma.category.findUnique({ where: { id } });
+  }
 }

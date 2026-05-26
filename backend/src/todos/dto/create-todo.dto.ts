@@ -1,11 +1,11 @@
-import { IsString, IsNumber, IsNotEmpty } from 'class-validator';
+import { IsString, IsInt, IsNotEmpty } from 'class-validator';
 
 export class CreateTodoDto {
   @IsString()
   @IsNotEmpty()
   text: string;
 
-  @IsNumber()
+  @IsInt()
   @IsNotEmpty()
   categoryId: number;
 }
