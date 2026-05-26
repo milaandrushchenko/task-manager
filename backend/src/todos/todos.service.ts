@@ -7,6 +7,12 @@ import { TodosRepository } from './todos.repository';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
 import { CategoriesService } from 'src/categories/categories.service';
+import { BulkUpdateTodoDto } from './dto/bulk-update-todo.dto';
+import { Todo } from 'src/generated/prisma/client';
+import {
+  ApiActionResponse,
+  toActionResponse,
+} from 'src/common/types/api-response.type';
 
 const MAX_TASKS_PER_CATEGORY = 5;
 @Injectable()
@@ -16,7 +22,7 @@ export class TodosService {
     private readonly categoriesService: CategoriesService,
   ) {}
 
-  async create(createTodoDto: CreateTodoDto) {
+  async create(createTodoDto: CreateTodoDto): Promise<ApiActionResponse<Todo>> {
     await this.categoriesService.findOne(createTodoDto.categoryId);
 
     const tasksCount = await this.todosRepository.countByCategoryId(
@@ -29,7 +35,9 @@ export class TodosService {
       );
     }
 
-    return this.todosRepository.create(createTodoDto);
+    const todo = await this.todosRepository.create(createTodoDto);
+
+    return toActionResponse(todo);
   }
 
   async findAll(categoryId?: number) {
@@ -46,18 +54,29 @@ export class TodosService {
     return todo;
   }
 
-  async update(id: number, updateTodoDto: UpdateTodoDto) {
+  async update(
+    id: number,
+    updateTodoDto: UpdateTodoDto,
+  ): Promise<ApiActionResponse<Todo>> {
     await this.findOne(id);
 
     if (updateTodoDto.categoryId) {
       await this.categoriesService.findOne(updateTodoDto.categoryId);
     }
 
-    return this.todosRepository.update(id, updateTodoDto);
+    const updatedTodo = await this.todosRepository.update(id, updateTodoDto);
+    return toActionResponse(updatedTodo);
   }
 
   async remove(id: number) {
     await this.findOne(id);
-    return this.todosRepository.remove(id);
+    const deletedTodo = await this.todosRepository.remove(id);
+    return toActionResponse(deletedTodo);
+  }
+
+  async markAsDoneBulk(dto: BulkUpdateTodoDto) {
+    const updatedCount = await this.todosRepository.markAsDoneBulk(dto.ids);
+
+    return toActionResponse({ updatedCount });
   }
 }

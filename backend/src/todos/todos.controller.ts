@@ -12,6 +12,7 @@ import {
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
 import { UpdateTodoDto } from './dto/update-todo.dto';
+import { BulkUpdateTodoDto } from './dto/bulk-update-todo.dto';
 
 @Controller('todos')
 export class TodosController {
@@ -33,6 +34,11 @@ export class TodosController {
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.todosService.findOne(id);
+  }
+
+  @Patch('bulk/done')
+  async markAsDoneBulk(@Body() dto: BulkUpdateTodoDto) {
+    return this.todosService.markAsDoneBulk(dto);
   }
 
   @Patch(':id')

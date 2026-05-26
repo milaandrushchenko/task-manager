@@ -72,4 +72,19 @@ export class TodosRepository {
       },
     });
   }
+
+  async markAsDoneBulk(ids: number[]): Promise<number> {
+    const result = await this.prisma.todo.updateMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      data: {
+        completed: true,
+      },
+    });
+
+    return result.count;
+  }
 }
