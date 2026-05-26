@@ -4,6 +4,7 @@ backend/build/
 backend/*.sqlite
 backend/*.sqlite-journal
 backend/*.db
+*.db
 
 .env
 .env.local

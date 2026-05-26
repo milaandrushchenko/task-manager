@@ -32,8 +32,8 @@ export class TodosService {
     return this.todosRepository.create(createTodoDto);
   }
 
-  findAll() {
-    return this.todosRepository.findAll();
+  async findAll(categoryId?: number) {
+    return this.todosRepository.findAll(categoryId);
   }
 
   async findOne(id: number) {

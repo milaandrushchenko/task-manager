@@ -1,7 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
-import { CreateTodoDto } from './dto/create-todo.dto.js';
-import { UpdateTodoDto } from './dto/update-todo.dto.js';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateTodoDto } from './dto/create-todo.dto';
+import { UpdateTodoDto } from './dto/update-todo.dto';
+import { ApiListResponse } from 'src/common/types/api-response.type';
+import { Todo } from 'src/generated/prisma/client';
 
 @Injectable()
 export class TodosRepository {
@@ -19,8 +21,9 @@ export class TodosRepository {
     });
   }
 
-  findAll() {
-    return this.prisma.todo.findMany({
+  async findAll(categoryId?: number): Promise<ApiListResponse<Todo>> {
+    const todos = await this.prisma.todo.findMany({
+      where: categoryId ? { categoryId } : {},
       include: {
         category: true,
       },
@@ -28,6 +31,10 @@ export class TodosRepository {
         createdAt: 'desc',
       },
     });
+
+    return {
+      list: todos,
+    };
   }
 
   findOne(id: number) {
@@ -58,7 +65,7 @@ export class TodosRepository {
     });
   }
 
-  async countByCategoryId(categoryId: number): Promise<number> {
+  countByCategoryId(categoryId: number): Promise<number> {
     return this.prisma.todo.count({
       where: {
         categoryId,

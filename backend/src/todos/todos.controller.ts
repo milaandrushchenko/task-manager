@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { TodosService } from './todos.service';
 import { CreateTodoDto } from './dto/create-todo.dto';
@@ -22,8 +23,11 @@ export class TodosController {
   }
 
   @Get()
-  findAll() {
-    return this.todosService.findAll();
+  findAll(
+    @Query('categoryId', new ParseIntPipe({ optional: true }))
+    categoryId?: number,
+  ) {
+    return this.todosService.findAll(categoryId);
   }
 
   @Get(':id')
