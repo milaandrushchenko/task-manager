@@ -1,39 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service.js';
+import { TodosRepository } from './todos.repository.js';
 import { CreateTodoDto } from './dto/create-todo.dto.js';
 import { UpdateTodoDto } from './dto/update-todo.dto.js';
 
 @Injectable()
 export class TodosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly todosRepository: TodosRepository) {}
 
   create(createTodoDto: CreateTodoDto) {
-    return this.prisma.todo.create({
-      data: {
-        text: createTodoDto.text,
-        categoryId: createTodoDto.categoryId,
-      },
-      include: {
-        category: true,
-      },
-    });
+    return this.todosRepository.create(createTodoDto);
   }
 
   findAll() {
-    return this.prisma.todo.findMany({
-      include: {
-        category: true,
-      },
-    });
+    return this.todosRepository.findAll();
   }
 
   async findOne(id: number) {
-    const todo = await this.prisma.todo.findUnique({
-      where: { id },
-      include: {
-        category: true,
-      },
-    });
+    const todo = await this.todosRepository.findOne(id);
 
     if (!todo) {
       throw new NotFoundException(`Todo with id ${id} not found`);
@@ -42,22 +25,13 @@ export class TodosService {
     return todo;
   }
 
-  update(id: number, updateTodoDto: UpdateTodoDto) {
-    return this.prisma.todo.update({
-      where: { id },
-      data: updateTodoDto,
-      include: {
-        category: true,
-      },
-    });
+  async update(id: number, updateTodoDto: UpdateTodoDto) {
+    await this.findOne(id);
+    return this.todosRepository.update(id, updateTodoDto);
   }
 
-  remove(id: number) {
-    return this.prisma.todo.delete({
-      where: { id },
-      include: {
-        category: true,
-      },
-    });
+  async remove(id: number) {
+    await this.findOne(id);
+    return this.todosRepository.remove(id);
   }
 }
