@@ -12,6 +12,9 @@ export const colors = {
   },
   white: "white",
   error: "#f44336",
+  errorLight: "rgba(211, 47, 47, 0.1)",
+  errorMain: "#d32f2f",
+  textMutedLight: "rgba(255, 255, 255, 0.7)",
   bg: {
     hoverSuccess: "rgba(76, 175, 80, 0.1)",
     hoverDanger: "rgba(244, 67, 54, 0.1)",

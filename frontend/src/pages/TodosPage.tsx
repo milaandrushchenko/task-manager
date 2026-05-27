@@ -19,9 +19,8 @@ export default function TodosPage() {
 
   const { categories } = useCategories();
 
-  const { todos, toggleTodo, deleteTodo, loading, createTodo } = useTodos(
-    selectedCategory === "" ? undefined : selectedCategory,
-  );
+  const { todos, toggleTodo, deleteTodo, loading, createTodo, error } =
+    useTodos(selectedCategory === "" ? undefined : selectedCategory);
 
   return (
     <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
@@ -55,13 +54,59 @@ export default function TodosPage() {
         />
 
         <Box sx={{ mt: spacing.lg }}>
-          <TaskList
-            todos={todos}
-            loading={loading}
-            onToggle={toggleTodo}
-            onDelete={deleteTodo}
-            onCreate={createTodo}
-          />
+          {error && !loading && (
+            <Box
+              sx={{
+                p: spacing.md,
+                borderRadius: 2,
+                backgroundColor: colors.errorLight,
+                border: `1px solid ${colors.errorMain}`,
+                color: colors.white,
+                textAlign: "center",
+              }}
+            >
+              <Typography
+                variant="body1"
+                sx={{ fontWeight: fontWeights.medium }}
+              >
+                {error}
+              </Typography>
+            </Box>
+          )}
+
+          {!error && !loading && todos.length === 0 && (
+            <Box
+              sx={{
+                py: spacing.xl,
+                textAlign: "center",
+                color: colors.textMutedLight,
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: fontWeights.medium, mb: 0.5 }}
+              >
+                {selectedCategory === ""
+                  ? "No tasks yet"
+                  : "No tasks in this category"}
+              </Typography>
+              <Typography variant="body2">
+                {selectedCategory === ""
+                  ? "Add your first task above to get started!"
+                  : "Try switching filters or add a new task here."}
+              </Typography>
+            </Box>
+          )}
+
+          {(loading || todos.length > 0) && !error && (
+            <TaskList
+              todos={todos}
+              loading={loading}
+              onToggle={toggleTodo}
+              onDelete={deleteTodo}
+              onCreate={createTodo}
+            />
+          )}
         </Box>
       </Paper>
     </Container>
