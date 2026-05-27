@@ -4,9 +4,6 @@ import {
   Box,
   CircularProgress,
   Typography,
-  Snackbar,
-  Alert,
-  Button,
 } from "@mui/material";
 import { TaskCard } from "./TaskCard";
 import {
@@ -22,6 +19,7 @@ import type {
   Todo,
 } from "@/types/api.types";
 import { getErrorMessage } from "@/utils/error.utils";
+import { TodoSnackbar } from "./TodoSnackbar";
 
 interface SnackbarState {
   open: boolean;
@@ -37,9 +35,6 @@ interface TaskListProps {
   onDelete: (id: number) => Promise<void>;
   onCreate: (data: CreateTodoBody) => Promise<ApiActionResponse<Todo>>;
 }
-
-const SNACKBAR_DURATION = 5000;
-const SNACKBAR_ERROR_DURATION = 8000;
 
 export const TaskList = ({
   todos,
@@ -237,53 +232,11 @@ export const TaskList = ({
         </Box>
       )}
 
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={
-          snackbar.severity === "error"
-            ? SNACKBAR_ERROR_DURATION
-            : SNACKBAR_DURATION
-        }
+      <TodoSnackbar
+        state={snackbar}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={snackbar.severity}
-          variant="filled"
-          sx={{
-            backgroundColor:
-              snackbar.severity === "info" ? colors.bg.snackbar : undefined,
-            color: colors.white,
-            borderRadius: 2,
-            boxShadow: shadows.md,
-            width: "100%",
-            "& .MuiAlert-action": {
-              paddingTop: 0,
-              paddingBottom: 0,
-              alignItems: "center",
-            },
-          }}
-          action={
-            snackbar.severity === "info" ? (
-              <Button
-                color="primary"
-                size="small"
-                onClick={handleUndo}
-                sx={{
-                  color: colors.successLight,
-                  fontWeight: fontWeights.semibold,
-                  marginLeft: 1,
-                }}
-              >
-                UNDO
-              </Button>
-            ) : null
-          }
-        >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
+        onUndo={handleUndo}
+      />
     </Container>
   );
 };
