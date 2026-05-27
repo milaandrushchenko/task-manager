@@ -1,0 +1,19 @@
+# --- Dependencies ---
+node_modules/
+
+# --- Build outputs ---
+dist/
+build/
+
+# --- Databases ---
+*.sqlite
+*.sqlite-journal
+*.db
+
+# --- Environment files ---
+.env
+.env.local
+
+# --- System/IDE files ---
+.DS_Store
+.vscode/
