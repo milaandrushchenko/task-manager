@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { todosEndpoints } from "@/api/endpoints/todos.endpoint";
 
-import type { Todo } from "@/types/api.types";
+import type { CreateTodoBody, Todo } from "@/types/api.types";
 
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -58,11 +58,25 @@ export const useTodos = () => {
     }
   };
 
+  const createTodo = async (data: CreateTodoBody) => {
+    try {
+      const newTodo = await todosEndpoints.create(data);
+
+      setTodos((prev) => [newTodo, ...prev]);
+
+      return newTodo;
+    } catch (err) {
+      console.error("Failed to create todo:", err);
+      throw err;
+    }
+  };
+
   return {
     todos,
     loading,
     toggleTodo,
     deleteTodo,
+    createTodo,
     refetch: fetchTodos,
   };
 };

@@ -15,11 +15,13 @@ export const colors = {
   bg: {
     hoverSuccess: "rgba(76, 175, 80, 0.1)",
     hoverDanger: "rgba(244, 67, 54, 0.1)",
+    snackbar: "rgba(30, 30, 30, 0.95)",
   },
 };
 
 // Shadows
 export const shadows = {
+  md: "0 4px 20px rgba(0, 0, 0, 0.15)",
   hover: {
     active: "0 2px 8px rgba(76, 175, 80, 0.2)",
     inactive: "0 4px 12px rgba(0, 0, 0, 0.1)",
@@ -50,6 +52,8 @@ export const spacing = {
 export const fontWeights = {
   regular: 400,
   medium: 500,
+  semibold: 600,
+  bold: 700,
 };
 
 // Icon Sizes

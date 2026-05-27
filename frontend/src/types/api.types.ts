@@ -20,6 +20,9 @@ export interface Todo {
   category?: Category;
 }
 
-export type CreateTodoInput = Omit<Todo, "id" | "createdAt" | "category">;
+export type CreateTodoBody = Omit<
+  Todo,
+  "id" | "createdAt" | "category" | "completed"
+>;
 
-export type UpdateTodoInput = Partial<CreateTodoInput>;
+export type UpdateTodoBody = Partial<CreateTodoBody> & { completed?: boolean };

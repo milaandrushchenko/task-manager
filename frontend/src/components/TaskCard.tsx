@@ -80,7 +80,9 @@ export const TaskCard = ({ todo, onToggle, onDelete }: TaskCardProps) => {
       </Box>
 
       {isCompleted && (
-        <CheckCircleIcon sx={{ color: colors.primary, fontSize: iconSizes.md }} />
+        <CheckCircleIcon
+          sx={{ color: colors.primary, fontSize: iconSizes.md }}
+        />
       )}
 
       <IconButton
