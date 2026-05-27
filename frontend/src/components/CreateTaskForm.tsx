@@ -121,6 +121,7 @@ export const CreateTaskForm = ({
             render={({ field }) => (
               <Select
                 {...field}
+                value={field.value ?? ""}
                 labelId="category-select-label"
                 label="Category"
               >
