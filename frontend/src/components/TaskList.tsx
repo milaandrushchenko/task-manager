@@ -144,7 +144,7 @@ export const TaskList = ({
   };
 
   return (
-    <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
+    <>
       {loading ? (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
           <CircularProgress sx={{ color: colors.white }} />
@@ -237,6 +237,6 @@ export const TaskList = ({
         onClose={handleCloseSnackbar}
         onUndo={handleUndo}
       />
-    </Container>
+    </>
   );
 };

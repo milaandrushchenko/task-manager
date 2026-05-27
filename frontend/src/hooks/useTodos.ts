@@ -1,20 +1,20 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { todosEndpoints } from "@/api/endpoints/todos.endpoint";
 
 import type { CreateTodoBody, Todo } from "@/types/api.types";
 
-export const useTodos = () => {
+export const useTodos = (categoryId?: number) => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchTodos = async () => {
+  const fetchTodos = useCallback(async () => {
     try {
       setLoading(true);
+      setError(null);
 
-      const response = await todosEndpoints.findAll();
-
+      const response = await todosEndpoints.findAll(categoryId);
       setTodos(response.list ?? []);
     } catch (err) {
       console.error("Failed to fetch todos:", err);
@@ -22,12 +22,12 @@ export const useTodos = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categoryId]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     void fetchTodos();
-  }, []);
+  }, [fetchTodos]);
 
   const toggleTodo = async (id: number, completed: boolean) => {
     try {

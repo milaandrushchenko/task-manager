@@ -8,9 +8,20 @@ import {
   fontWeights,
   colors,
 } from "@/styles/theme.constants";
+import { useState } from "react";
+import { useCategories } from "@/hooks/useCategories";
+import type { FilterCategoryValue } from "@/types/common.types";
+import { CategoryFilter } from "@/components/CategoryFilter";
 
 export default function TodosPage() {
-  const { todos, loading, toggleTodo, deleteTodo, createTodo } = useTodos();
+  const [selectedCategory, setSelectedCategory] =
+    useState<FilterCategoryValue>("");
+
+  const { categories } = useCategories();
+
+  const { todos, toggleTodo, deleteTodo, loading, createTodo } = useTodos(
+    selectedCategory === "" ? undefined : selectedCategory,
+  );
 
   return (
     <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
@@ -35,7 +46,13 @@ export default function TodosPage() {
           ✓ Task Manager
         </Typography>
 
-        <CreateTaskForm onCreate={createTodo} />
+        <CreateTaskForm onCreate={createTodo} categories={categories} />
+
+        <CategoryFilter
+          value={selectedCategory}
+          onChange={setSelectedCategory}
+          categories={categories}
+        />
 
         <Box sx={{ mt: spacing.lg }}>
           <TaskList

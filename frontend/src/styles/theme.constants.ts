@@ -1,6 +1,6 @@
 // Colors
 export const colors = {
-  primary: "#4caf50",
+  primary: "#095f0c",
   success: "#e8f5e9",
   successBorder: "#4caf50",
   successLight: "#66bb6a",
@@ -36,7 +36,7 @@ export const transitions = {
 
 // Gradients
 export const gradients = {
-  container: "linear-gradient(135deg, #11998e 0%, #38ef7d 100%)",
+  container: "linear-gradient(135deg, #a5b0af 0%, #9ec1ab 100%)",
   purple: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
 };
 

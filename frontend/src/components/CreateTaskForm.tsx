@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { useForm, Controller } from "react-hook-form";
 import {
   Paper,
@@ -14,7 +13,6 @@ import {
   Typography,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
-import { categoriesEndpoint } from "@/api/endpoints/categories.endpoint";
 import { colors, spacing, fontWeights } from "@/styles/theme.constants";
 import type {
   ApiActionResponse,
@@ -26,11 +24,13 @@ import { getErrorMessage } from "@/utils/error.utils";
 
 interface CreateTaskFormProps {
   onCreate: (data: CreateTodoBody) => Promise<ApiActionResponse<Todo>>;
+  categories: Category[];
 }
 
-export const CreateTaskForm = ({ onCreate }: CreateTaskFormProps) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-
+export const CreateTaskForm = ({
+  onCreate,
+  categories,
+}: CreateTaskFormProps) => {
   const {
     handleSubmit,
     reset,
@@ -43,13 +43,6 @@ export const CreateTaskForm = ({ onCreate }: CreateTaskFormProps) => {
       categoryId: undefined,
     },
   });
-
-  useEffect(() => {
-    categoriesEndpoint
-      .getAll()
-      .then((res) => setCategories(res.list ?? []))
-      .catch((err) => console.error("Failed to load categories:", err));
-  }, []);
 
   const onSubmit = async (data: CreateTodoBody) => {
     try {
