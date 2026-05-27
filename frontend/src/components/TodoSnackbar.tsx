@@ -16,7 +16,7 @@ export interface TodoSnackbarState {
 interface TodoSnackbarProps {
   state: TodoSnackbarState;
   onClose: () => void;
-  onUndo: () => Promise<void>;
+  onUndo?: () => Promise<void>;
 }
 
 export const TodoSnackbar = ({ state, onClose, onUndo }: TodoSnackbarProps) => {

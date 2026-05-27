@@ -8,15 +8,16 @@ import {
   fontWeights,
   colors,
 } from "@/styles/theme.constants";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCategories } from "@/hooks/useCategories";
 import type { FilterCategoryValue } from "@/types/common.types";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { useSnackbar } from "@/contexts/snackbar/useSnackbar";
 
 export default function TodosPage() {
   const [selectedCategory, setSelectedCategory] =
     useState<FilterCategoryValue>("");
-
+  const { showError } = useSnackbar();
   const { categories } = useCategories();
 
   const {
@@ -28,6 +29,12 @@ export default function TodosPage() {
     toggleMultipleTodos,
     error,
   } = useTodos(selectedCategory === "" ? undefined : selectedCategory);
+
+  useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
 
   return (
     <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
@@ -61,27 +68,7 @@ export default function TodosPage() {
         />
 
         <Box sx={{ mt: spacing.lg }}>
-          {error && !loading && (
-            <Box
-              sx={{
-                p: spacing.md,
-                borderRadius: 2,
-                backgroundColor: colors.errorLight,
-                border: `1px solid ${colors.errorMain}`,
-                color: colors.white,
-                textAlign: "center",
-              }}
-            >
-              <Typography
-                variant="body1"
-                sx={{ fontWeight: fontWeights.medium }}
-              >
-                {error}
-              </Typography>
-            </Box>
-          )}
-
-          {!error && !loading && todos.length === 0 && (
+          {!loading && !error && todos.length === 0 && (
             <Box
               sx={{
                 py: spacing.xl,
@@ -100,12 +87,12 @@ export default function TodosPage() {
               <Typography variant="body2">
                 {selectedCategory === ""
                   ? "Add your first task above to get started!"
-                  : "Try switching filters or add a new task here."}
+                  : "Try switching filters."}
               </Typography>
             </Box>
           )}
 
-          {(loading || todos.length > 0) && !error && (
+          {(loading || todos.length > 0) && (
             <TaskList
               todos={todos}
               loading={loading}

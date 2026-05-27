@@ -22,15 +22,7 @@ import type {
   Todo,
 } from "@/types/api.types";
 import { getErrorMessage } from "@/utils/error.utils";
-import { TodoSnackbar } from "./TodoSnackbar";
-
-interface SnackbarState {
-  open: boolean;
-  message: string;
-  actionType: "toggle" | "delete" | "bulk_done" | null;
-  taskData: Todo | Todo[] | null;
-  severity: "info" | "error";
-}
+import { useSnackbar } from "@/contexts/snackbar/useSnackbar";
 
 interface TaskListProps {
   todos: Todo[];
@@ -49,14 +41,7 @@ export const TaskList = ({
   onCreate,
   onToggleMultiple,
 }: TaskListProps) => {
-  const [snackbar, setSnackbar] = useState<SnackbarState>({
-    open: false,
-    message: "",
-    actionType: null,
-    taskData: null,
-    severity: "info",
-  });
-
+  const { showInfo, showError } = useSnackbar();
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
 
   const activeTodos = todos.filter((t) => !t.completed);
@@ -76,116 +61,56 @@ export const TaskList = ({
     );
   };
 
-  const executeTaskAction = async (
+  const executeTaskAction = async <T,>(
     action: () => Promise<unknown>,
-    successConfig: Omit<SnackbarState, "open" | "severity">,
-    defaultErrorMessage: string,
+    successMessage: string,
+    errorMessage: string,
+    onUndo?: () => Promise<T>,
   ) => {
     try {
       await action();
-      setSnackbar({
-        ...successConfig,
-        open: true,
-        severity: "info",
-      });
+
+      showInfo(successMessage, onUndo || undefined);
     } catch (err) {
-      console.error(defaultErrorMessage, err);
-      setSnackbar({
-        open: true,
-        message: getErrorMessage(err, defaultErrorMessage),
-        actionType: null,
-        taskData: null,
-        severity: "error",
-      });
+      showError(getErrorMessage(err, errorMessage));
     }
   };
 
   const handleToggle = async (id: number, currentCompleted: boolean) => {
-    const targetTask = todos.find((t) => t.id === id);
-    if (!targetTask) return;
+    const task = todos.find((t) => t.id === id);
+    if (!task) return;
 
     await executeTaskAction(
       () => onToggle(id, currentCompleted),
-      {
-        message: currentCompleted ? "Task marked as active" : "Task completed!",
-        actionType: "toggle",
-        taskData: targetTask,
-      },
+      currentCompleted ? "Task marked as active" : "Task completed!",
       "Failed to update task status.",
+      () => onToggle(id, !currentCompleted), // UNDO
+    );
+  };
+
+  const handleDelete = async (id: number) => {
+    const task = todos.find((t) => t.id === id);
+    if (!task) return;
+
+    await executeTaskAction(
+      () => onDelete(id),
+      "Task deleted",
+      "Failed to delete task.",
+      () => onCreate({ text: task.text, categoryId: task.categoryId }), // UNDO
     );
   };
 
   const handleBulkMarkAsDone = async () => {
     if (selectedIds.length === 0) return;
-
-    const tasksToUpdate = todos.filter((t) => selectedIds.includes(t.id));
+    const ids = [...selectedIds];
 
     await executeTaskAction(
-      () => onToggleMultiple(selectedIds, true),
-      {
-        message: `Marked ${selectedIds.length} tasks as done`,
-        actionType: "bulk_done",
-        taskData: tasksToUpdate,
-      },
+      () => onToggleMultiple(ids, true),
+      `Marked ${ids.length} tasks as done`,
       "Failed to update selected tasks.",
+      () => onToggleMultiple(ids, false), // UNDO
     );
     setSelectedIds([]);
-  };
-
-  const handleDelete = async (id: number) => {
-    const targetTask = todos.find((t) => t.id === id);
-    if (!targetTask) return;
-
-    await executeTaskAction(
-      () => onDelete(id),
-      {
-        message: "Task deleted",
-        actionType: "delete",
-        taskData: targetTask,
-      },
-      "Failed to delete task.",
-    );
-  };
-
-  const handleUndo = async () => {
-    const { actionType, taskData } = snackbar;
-
-    if (!taskData) return;
-
-    const undoAction = async () => {
-      if (actionType === "bulk_done" && Array.isArray(taskData)) {
-        const ids = taskData.map((task) => task.id);
-        return onToggleMultiple(ids, false);
-      }
-
-      if (!Array.isArray(taskData)) {
-        return actionType === "delete"
-          ? onCreate({ text: taskData.text, categoryId: taskData.categoryId })
-          : onToggle(taskData.id, !taskData.completed);
-      }
-    };
-
-    try {
-      await undoAction();
-      handleCloseSnackbar();
-    } catch (err) {
-      console.error("Failed to undo action:", err);
-      setSnackbar({
-        open: true,
-        message: getErrorMessage(err, "Failed to undo action."),
-        actionType: null,
-        taskData: null,
-        severity: "error",
-      });
-    }
-  };
-
-  const handleCloseSnackbar = (
-    _?: React.SyntheticEvent | Event,
-    reason?: string,
-  ) => {
-    if (reason === "clickaway") return;
-    setSnackbar((prev) => ({ ...prev, open: false }));
   };
 
   const isAllSelected =
@@ -386,12 +311,6 @@ export const TaskList = ({
           )}
         </Box>
       )}
-
-      <TodoSnackbar
-        state={snackbar}
-        onClose={handleCloseSnackbar}
-        onUndo={handleUndo}
-      />
     </>
   );
 };
