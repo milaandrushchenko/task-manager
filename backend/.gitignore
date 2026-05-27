@@ -6,10 +6,9 @@ dist/
 build/
 
 # --- Databases ---
-*.sqlite
-*.sqlite-journal
-*.db
-
+**/*.sqlite
+**/*.sqlite-journal
+**/*.db
 # --- Environment files ---
 .env
 .env.local
