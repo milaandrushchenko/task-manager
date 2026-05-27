@@ -22,6 +22,7 @@ import type {
   CreateTodoBody,
   Todo,
 } from "@/types/api.types";
+import { getErrorMessage } from "@/utils/error.utils";
 
 interface CreateTaskFormProps {
   onCreate: (data: CreateTodoBody) => Promise<ApiActionResponse<Todo>>;
@@ -59,9 +60,13 @@ export const CreateTaskForm = ({ onCreate }: CreateTaskFormProps) => {
       reset();
     } catch (err) {
       console.error("Failed to create task:", err);
+
       setError("root.serverError", {
         type: "server",
-        message: "Failed to create task. Please try again later.",
+        message: getErrorMessage(
+          err,
+          "Failed to create task. Please try again later.",
+        ),
       });
     }
   };

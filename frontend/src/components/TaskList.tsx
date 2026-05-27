@@ -21,12 +21,14 @@ import type {
   CreateTodoBody,
   Todo,
 } from "@/types/api.types";
+import { getErrorMessage } from "@/utils/error.utils";
 
 interface SnackbarState {
   open: boolean;
   message: string;
   actionType: "toggle" | "delete" | null;
   taskData: Todo | null;
+  severity: "info" | "error";
 }
 interface TaskListProps {
   todos: Todo[];
@@ -37,6 +39,7 @@ interface TaskListProps {
 }
 
 const SNACKBAR_DURATION = 5000;
+const SNACKBAR_ERROR_DURATION = 8000;
 
 export const TaskList = ({
   todos,
@@ -50,56 +53,90 @@ export const TaskList = ({
     message: "",
     actionType: null,
     taskData: null,
+    severity: "info",
   });
 
   const activeTodos = todos.filter((t) => !t.completed);
   const completedTodos = todos.filter((t) => t.completed);
 
+  const executeTaskAction = async (
+    action: () => Promise<unknown>,
+    successConfig: Omit<SnackbarState, "open" | "severity">,
+    defaultErrorMessage: string,
+  ) => {
+    try {
+      await action();
+
+      setSnackbar({
+        ...successConfig,
+        open: true,
+        severity: "info",
+      });
+    } catch (err) {
+      console.error(defaultErrorMessage, err);
+
+      setSnackbar({
+        open: true,
+        message: getErrorMessage(err, defaultErrorMessage),
+        actionType: null,
+        taskData: null,
+        severity: "error",
+      });
+    }
+  };
+
   const handleToggle = async (id: number, currentCompleted: boolean) => {
     const targetTask = todos.find((t) => t.id === id);
     if (!targetTask) return;
 
-    await onToggle(id, currentCompleted);
-
-    setSnackbar({
-      open: true,
-      message: currentCompleted ? "Task marked as active" : "Task completed!",
-      actionType: "toggle",
-      taskData: targetTask,
-    });
+    await executeTaskAction(
+      () => onToggle(id, currentCompleted),
+      {
+        message: currentCompleted ? "Task marked as active" : "Task completed!",
+        actionType: "toggle",
+        taskData: targetTask,
+      },
+      "Failed to update task status.",
+    );
   };
 
   const handleDelete = async (id: number) => {
     const targetTask = todos.find((t) => t.id === id);
     if (!targetTask) return;
 
-    await onDelete(id);
-
-    setSnackbar({
-      open: true,
-      message: "Task deleted",
-      actionType: "delete",
-      taskData: targetTask,
-    });
+    await executeTaskAction(
+      () => onDelete(id),
+      {
+        message: "Task deleted",
+        actionType: "delete",
+        taskData: targetTask,
+      },
+      "Failed to delete task.",
+    );
   };
 
   const handleUndo = async () => {
     const { actionType, taskData } = snackbar;
     if (!taskData) return;
 
+    const undoAction = () =>
+      actionType === "delete"
+        ? onCreate({ text: taskData.text, categoryId: taskData.categoryId })
+        : onToggle(taskData.id, !taskData.completed);
+
     try {
-      if (actionType === "delete") {
-        await onCreate({
-          text: taskData.text,
-          categoryId: taskData.categoryId,
-        });
-      } else if (actionType === "toggle") {
-        await onToggle(taskData.id, !taskData.completed);
-      }
+      await undoAction();
+      handleCloseSnackbar();
     } catch (err) {
       console.error("Failed to undo action:", err);
-    } finally {
-      handleCloseSnackbar();
+
+      setSnackbar({
+        open: true,
+        message: getErrorMessage(err, "Failed to undo action."),
+        actionType: null,
+        taskData: null,
+        severity: "error",
+      });
     }
   };
 
@@ -199,18 +236,24 @@ export const TaskList = ({
           )}
         </Box>
       )}
+
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={SNACKBAR_DURATION}
+        autoHideDuration={
+          snackbar.severity === "error"
+            ? SNACKBAR_ERROR_DURATION
+            : SNACKBAR_DURATION
+        }
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
-          severity="info"
+          severity={snackbar.severity}
           variant="filled"
           sx={{
-            backgroundColor: colors.bg.snackbar,
+            backgroundColor:
+              snackbar.severity === "info" ? colors.bg.snackbar : undefined,
             color: colors.white,
             borderRadius: 2,
             boxShadow: shadows.md,
@@ -222,18 +265,20 @@ export const TaskList = ({
             },
           }}
           action={
-            <Button
-              color="primary"
-              size="small"
-              onClick={handleUndo}
-              sx={{
-                color: colors.successLight,
-                fontWeight: fontWeights.semibold,
-                marginLeft: 1,
-              }}
-            >
-              UNDO
-            </Button>
+            snackbar.severity === "info" ? (
+              <Button
+                color="primary"
+                size="small"
+                onClick={handleUndo}
+                sx={{
+                  color: colors.successLight,
+                  fontWeight: fontWeights.semibold,
+                  marginLeft: 1,
+                }}
+              >
+                UNDO
+              </Button>
+            ) : null
           }
         >
           {snackbar.message}

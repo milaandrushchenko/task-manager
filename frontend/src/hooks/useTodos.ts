@@ -7,6 +7,7 @@ import type { CreateTodoBody, Todo } from "@/types/api.types";
 export const useTodos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTodos = async () => {
     try {
@@ -17,6 +18,7 @@ export const useTodos = () => {
       setTodos(response.list ?? []);
     } catch (err) {
       console.error("Failed to fetch todos:", err);
+      setError("Failed to load tasks. Please refresh the page.");
     } finally {
       setLoading(false);
     }
@@ -45,6 +47,7 @@ export const useTodos = () => {
       );
     } catch (err) {
       console.error("Failed to toggle todo:", err);
+      throw err;
     }
   };
 
@@ -55,6 +58,7 @@ export const useTodos = () => {
       setTodos((prev) => prev.filter((todo) => todo.id !== id));
     } catch (err) {
       console.error("Failed to delete todo:", err);
+      throw err;
     }
   };
 
@@ -74,6 +78,7 @@ export const useTodos = () => {
   return {
     todos,
     loading,
+    error,
     toggleTodo,
     deleteTodo,
     createTodo,
