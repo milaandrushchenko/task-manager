@@ -2,9 +2,9 @@ import { apiClient } from "../client";
 import type {
   ApiActionResponse,
   ApiListResponse,
-  CreateTodoInput,
+  CreateTodoBody,
   Todo,
-  UpdateTodoInput,
+  UpdateTodoBody,
 } from "@/types/api.types";
 
 export const todosEndpoints = {
@@ -13,12 +13,12 @@ export const todosEndpoints = {
 
   findOne: (id: number): Promise<Todo> => apiClient.get(`/todos/${id}`),
 
-  create: (data: CreateTodoInput): Promise<ApiActionResponse<Todo>> =>
+  create: (data: CreateTodoBody): Promise<ApiActionResponse<Todo>> =>
     apiClient.post("/todos", data),
 
   update: (
     id: number,
-    data: UpdateTodoInput,
+    data: UpdateTodoBody,
   ): Promise<ApiActionResponse<Todo>> => apiClient.patch(`/todos/${id}`, data),
 
   remove: (id: number): Promise<ApiActionResponse<Todo>> =>

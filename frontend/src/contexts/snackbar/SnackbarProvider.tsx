@@ -17,9 +17,11 @@ export const SnackbarProvider = ({ children }: { children: ReactNode }) => {
   const [undoCallback, setUndoCallback] = useState<() => Promise<void>>(
     async () => {},
   );
+  const showInfo = <T,>(message: string, onUndo?: () => Promise<T>) => {
+    if (onUndo) {
+      setUndoCallback(() => onUndo as () => Promise<void>);
+    }
 
-  const showInfo = (message: string, onUndo: () => Promise<void>) => {
-    setUndoCallback(() => onUndo);
     setState({
       open: true,
       message,
