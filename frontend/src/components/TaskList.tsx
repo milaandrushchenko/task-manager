@@ -8,17 +8,19 @@ import {
   Alert,
   Button,
 } from "@mui/material";
-import { useTodos } from "@/hooks/useTodos";
 import { TaskCard } from "./TaskCard";
 import {
   colors,
   shadows,
-  gradients,
   spacing,
   fontWeights,
 } from "@/styles/theme.constants";
 import { useState } from "react";
-import type { Todo } from "@/types/api.types";
+import type {
+  ApiActionResponse,
+  CreateTodoBody,
+  Todo,
+} from "@/types/api.types";
 
 interface SnackbarState {
   open: boolean;
@@ -26,15 +28,23 @@ interface SnackbarState {
   actionType: "toggle" | "delete" | null;
   taskData: Todo | null;
 }
+interface TaskListProps {
+  todos: Todo[];
+  loading: boolean;
+  onToggle: (id: number, currentCompleted: boolean) => Promise<void>;
+  onDelete: (id: number) => Promise<void>;
+  onCreate: (data: CreateTodoBody) => Promise<ApiActionResponse<Todo>>;
+}
 
 const SNACKBAR_DURATION = 5000;
 
-export const TaskList = () => {
-  const { todos, loading, toggleTodo, deleteTodo, createTodo } = useTodos();
-
-  const activeTodos = todos.filter((t) => !t.completed);
-  const completedTodos = todos.filter((t) => t.completed);
-
+export const TaskList = ({
+  todos,
+  loading,
+  onToggle,
+  onDelete,
+  onCreate,
+}: TaskListProps) => {
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: "",
@@ -42,11 +52,14 @@ export const TaskList = () => {
     taskData: null,
   });
 
+  const activeTodos = todos.filter((t) => !t.completed);
+  const completedTodos = todos.filter((t) => t.completed);
+
   const handleToggle = async (id: number, currentCompleted: boolean) => {
     const targetTask = todos.find((t) => t.id === id);
     if (!targetTask) return;
 
-    await toggleTodo(id, currentCompleted);
+    await onToggle(id, currentCompleted);
 
     setSnackbar({
       open: true,
@@ -60,7 +73,7 @@ export const TaskList = () => {
     const targetTask = todos.find((t) => t.id === id);
     if (!targetTask) return;
 
-    await deleteTodo(id);
+    await onDelete(id);
 
     setSnackbar({
       open: true,
@@ -76,12 +89,12 @@ export const TaskList = () => {
 
     try {
       if (actionType === "delete") {
-        await createTodo({
+        await onCreate({
           text: taskData.text,
           categoryId: taskData.categoryId,
         });
       } else if (actionType === "toggle") {
-        await toggleTodo(taskData.id, !taskData.completed);
+        await onToggle(taskData.id, !taskData.completed);
       }
     } catch (err) {
       console.error("Failed to undo action:", err);
@@ -100,117 +113,92 @@ export const TaskList = () => {
 
   return (
     <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
-      <Paper
-        elevation={3}
-        sx={{
-          p: spacing.xl,
-          borderRadius: 3,
-          background: gradients.container,
-          minHeight: "100vh",
-        }}
-      >
-        {/* Header */}
-        <Typography
-          variant="h4"
+      {loading ? (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+          <CircularProgress sx={{ color: colors.white }} />
+        </Box>
+      ) : todos.length === 0 ? (
+        <Paper
           sx={{
-            mb: spacing.xl,
-            fontWeight: fontWeights.bold,
-            color: colors.white,
+            p: spacing.xl,
             textAlign: "center",
+            backgroundColor: colors.white,
+            borderRadius: 2,
           }}
         >
-          ✓ Task Manager
-        </Typography>
-
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-            <CircularProgress sx={{ color: colors.white }} />
-          </Box>
-        ) : todos.length === 0 ? (
-          <Paper
-            sx={{
-              p: spacing.xl,
-              textAlign: "center",
-              backgroundColor: colors.white,
-              borderRadius: 2,
-            }}
-          >
-            <Typography color="textSecondary">
-              No tasks yet. Create one to get started!
-            </Typography>
-          </Paper>
-        ) : (
-          <Box
-            sx={{ display: "flex", flexDirection: "column", gap: spacing.lg }}
-          >
-            {/* Active Tasks */}
-            {activeTodos.length > 0 && (
-              <Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: spacing.md,
-                    fontWeight: fontWeights.semibold,
-                    color: colors.white,
-                    textShadow: shadows.text,
-                  }}
-                >
-                  Active Tasks ({activeTodos.length})
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: spacing.sm,
-                  }}
-                >
-                  {activeTodos.map((todo) => (
-                    <TaskCard
-                      key={todo.id}
-                      todo={todo}
-                      onToggle={handleToggle}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </Box>
+          <Typography color="textSecondary">
+            No tasks yet. Create one to get started!
+          </Typography>
+        </Paper>
+      ) : (
+        <Box sx={{ display: "flex", flexDirection: "column", gap: spacing.lg }}>
+          {/* Active Tasks */}
+          {activeTodos.length > 0 && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: spacing.md,
+                  fontWeight: fontWeights.semibold,
+                  color: colors.white,
+                  textShadow: shadows.text,
+                }}
+              >
+                Active Tasks ({activeTodos.length})
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: spacing.sm,
+                }}
+              >
+                {activeTodos.map((todo) => (
+                  <TaskCard
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={handleToggle}
+                    onDelete={handleDelete}
+                  />
+                ))}
               </Box>
-            )}
+            </Box>
+          )}
 
-            {/* Completed Tasks */}
-            {completedTodos.length > 0 && (
-              <Box>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    mb: spacing.md,
-                    fontWeight: fontWeights.semibold,
-                    color: colors.white,
-                    textShadow: shadows.text,
-                  }}
-                >
-                  Completed ({completedTodos.length})
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: spacing.sm,
-                  }}
-                >
-                  {completedTodos.map((todo) => (
-                    <TaskCard
-                      key={todo.id}
-                      todo={todo}
-                      onToggle={handleToggle}
-                      onDelete={handleDelete}
-                    />
-                  ))}
-                </Box>
+          {/* Completed Tasks */}
+          {completedTodos.length > 0 && (
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  mb: spacing.md,
+                  fontWeight: fontWeights.semibold,
+                  color: colors.white,
+                  textShadow: shadows.text,
+                }}
+              >
+                Completed ({completedTodos.length})
+              </Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: spacing.sm,
+                }}
+              >
+                {completedTodos.map((todo) => (
+                  <TaskCard
+                    key={todo.id}
+                    todo={todo}
+                    onToggle={handleToggle}
+                    onDelete={handleDelete}
+                  />
+                ))}
               </Box>
-            )}
-          </Box>
-        )}
-      </Paper>
+            </Box>
+          )}
+        </Box>
+      )}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={SNACKBAR_DURATION}
