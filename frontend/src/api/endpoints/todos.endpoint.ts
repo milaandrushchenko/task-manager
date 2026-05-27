@@ -24,8 +24,9 @@ export const todosEndpoints = {
   remove: (id: number): Promise<ApiActionResponse<Todo>> =>
     apiClient.delete(`/todos/${id}`),
 
-  markAsDoneBulk: (
+  updateStatusBulk: (
     ids: number[],
+    completed: boolean,
   ): Promise<ApiActionResponse<{ count: number }>> =>
-    apiClient.patch("/todos/bulk/done", { ids }),
+    apiClient.patch("/todos/bulk/status", { ids, completed }),
 };

@@ -19,8 +19,15 @@ export default function TodosPage() {
 
   const { categories } = useCategories();
 
-  const { todos, toggleTodo, deleteTodo, loading, createTodo, error } =
-    useTodos(selectedCategory === "" ? undefined : selectedCategory);
+  const {
+    todos,
+    toggleTodo,
+    deleteTodo,
+    loading,
+    createTodo,
+    toggleMultipleTodos,
+    error,
+  } = useTodos(selectedCategory === "" ? undefined : selectedCategory);
 
   return (
     <Container maxWidth="sm" sx={{ py: spacing.xl, pb: 8 }}>
@@ -105,6 +112,7 @@ export default function TodosPage() {
               onToggle={toggleTodo}
               onDelete={deleteTodo}
               onCreate={createTodo}
+              onToggleMultiple={toggleMultipleTodos}
             />
           )}
         </Box>

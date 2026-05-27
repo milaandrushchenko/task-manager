@@ -8,8 +8,8 @@ export const SNACKBAR_ERROR_DURATION = 8000;
 export interface TodoSnackbarState {
   open: boolean;
   message: string;
-  actionType: "toggle" | "delete" | null;
-  taskData: Todo | null;
+  actionType: "toggle" | "delete" | "bulk_done" | null;
+  taskData: Todo | Todo[] | null;
   severity: "info" | "error";
 }
 

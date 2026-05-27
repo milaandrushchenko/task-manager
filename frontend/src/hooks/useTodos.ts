@@ -75,6 +75,33 @@ export const useTodos = (categoryId?: number) => {
     }
   };
 
+  const toggleMultipleTodos = useCallback(
+    async (ids: number[], completed: boolean) => {
+      let previousTodos: Todo[] = [];
+
+      try {
+        setError(null);
+
+        setTodos((prev) => {
+          previousTodos = prev;
+          return prev.map((todo) =>
+            ids.includes(todo.id) ? { ...todo, completed } : todo,
+          );
+        });
+
+        await todosEndpoints.updateStatusBulk(ids, completed);
+      } catch (err) {
+        console.error("Failed to bulk update tasks:", err);
+        setError("Failed to update selected tasks. Please try again.");
+
+        setTodos(previousTodos);
+
+        throw err;
+      }
+    },
+    [],
+  );
+
   return {
     todos,
     loading,
@@ -83,5 +110,6 @@ export const useTodos = (categoryId?: number) => {
     deleteTodo,
     createTodo,
     refetch: fetchTodos,
+    toggleMultipleTodos,
   };
 };
