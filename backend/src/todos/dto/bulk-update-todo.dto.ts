@@ -1,7 +1,10 @@
-import { IsArray, IsInt } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber } from 'class-validator';
 
 export class BulkUpdateTodoDto {
   @IsArray()
-  @IsInt({ each: true })
+  @IsNumber({}, { each: true })
   ids: number[];
+
+  @IsBoolean()
+  completed: boolean;
 }

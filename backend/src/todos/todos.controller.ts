@@ -36,9 +36,9 @@ export class TodosController {
     return this.todosService.findOne(id);
   }
 
-  @Patch('bulk/done')
-  async markAsDoneBulk(@Body() dto: BulkUpdateTodoDto) {
-    return this.todosService.markAsDoneBulk(dto);
+  @Patch('bulk/status')
+  async updateStatusBulk(@Body() dto: BulkUpdateTodoDto) {
+    return this.todosService.updateStatusBulk(dto);
   }
 
   @Patch(':id')

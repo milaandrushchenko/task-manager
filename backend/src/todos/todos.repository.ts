@@ -73,7 +73,7 @@ export class TodosRepository {
     });
   }
 
-  async markAsDoneBulk(ids: number[]): Promise<number> {
+  async updateStatusBulk(ids: number[], completed: boolean): Promise<number> {
     const result = await this.prisma.todo.updateMany({
       where: {
         id: {
@@ -81,7 +81,7 @@ export class TodosRepository {
         },
       },
       data: {
-        completed: true,
+        completed,
       },
     });
 

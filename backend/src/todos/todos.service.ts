@@ -74,8 +74,11 @@ export class TodosService {
     return toActionResponse(deletedTodo);
   }
 
-  async markAsDoneBulk(dto: BulkUpdateTodoDto) {
-    const updatedCount = await this.todosRepository.markAsDoneBulk(dto.ids);
+  async updateStatusBulk(dto: BulkUpdateTodoDto) {
+    const updatedCount = await this.todosRepository.updateStatusBulk(
+      dto.ids,
+      dto.completed,
+    );
 
     return toActionResponse({ updatedCount });
   }
